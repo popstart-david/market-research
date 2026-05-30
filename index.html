@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Popstart — Market Research Primer</title>
+<title>Popstart — Market Research Primer (Prototype v2)</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Newsreader:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 
@@ -319,7 +319,7 @@
 <!-- ============ PROFILE HEADER ============ -->
 <div class="topbar">
   <span class="logo">POPSTART</span>
-  <span class="agent-name">Market Research Primer &middot; Module 1, Section 5</span>
+  <span class="agent-name">Market Research Primer &middot; Module 1, Section 5 &middot; Prototype v2</span>
   <div class="profile-fields">
     <span class="scope-warn" id="scope-warn">Module 1 applies broadly &mdash; some examples assume a product-or-service business.</span>
     <div class="pf">
@@ -366,7 +366,7 @@
   <div class="canvas-pane">
     <div class="tabs" role="tablist" aria-label="Output surfaces">
       <button class="tab active" data-tab="iv" role="tab" aria-selected="true" aria-controls="tv-iv" id="tab-iv">Your Answers</button>
-      <button class="tab" data-tab="cards" role="tab" aria-selected="false" aria-controls="tv-cards" id="tab-cards">Stages <span class="badge-n" id="cards-count">0/10</span></button>
+      <button class="tab" data-tab="cards" role="tab" aria-selected="false" aria-controls="tv-cards" id="tab-cards">Stages <span class="badge-n" id="cards-count">0/12</span></button>
       <button class="tab" data-tab="deliv" role="tab" aria-selected="false" aria-controls="tv-deliv" id="tab-deliv">Deliverable</button>
     </div>
     <div class="tabview active" id="tv-iv" role="tabpanel" aria-labelledby="tab-iv"></div>
@@ -378,50 +378,88 @@
 
 <script>
 /* ====================================================================
-   PROMPT DEFINITIONS — six prompts per ADD §3.2
+   PROMPT DEFINITIONS — ten prompts per v2.1 ADD §3.2 (mapped from v2.4 script §4)
    ==================================================================== */
 const PROMPTS = {
-  P1: { key:"P1", q:"Tell me about your target customer.",
-    hint:"Describe your ideal customer in one or two sentences. Be specific. The more specific this is, the more useful your primer will be.",
+  P1: { key:"P1", q:"What is the one question your market research needs to answer?",
+    hint:"The clearer your question, the more useful your primer will be. Then tell me your geographic scope.",
+    example:"Is there enough demand for a premium nutrition coaching service among busy professionals in Austin?",
+    type:"composite",
+    placeholder:"Your research question\u2026",
+    scopeOptions:["Local","Regional","National","International"] },
+
+  P2: { key:"P2", q:"Tell me about your target customer.",
+    hint:"Describe your ideal customer in one or two sentences. Be specific \u2014 the more specific this is, the more useful your primer will be.",
     example:"Busy professionals aged 30 to 50 who are frustrated with unreliable home service contractors and willing to pay more for consistency.",
     type:"text",
     placeholder:"Who is this for? Age, situation, frustration\u2026" },
 
-  P2: { key:"P2", q:"What problem are you solving for them?",
-    hint:"What is your customer trying to solve \u2014 and why does it frustrate them?",
+  P3: { key:"P3", q:"What is the problem you solve?",
+    hint:"What is the problem your customer is trying to solve \u2014 and why does it frustrate them?",
     example:"They can never find a contractor who shows up on time, does quality work, and communicates clearly. They've been burned enough times that they've given up trying.",
     type:"text",
-    placeholder:"What's the gap they're stuck in today?" },
+    placeholder:"The specific frustration or gap\u2026" },
 
-  P3: { key:"P3", q:"Who are your top three competitors?",
-    hint:"These can be direct competitors, indirect alternatives, or even the DIY option. Pick up to three.",
+  P3a: { key:"P3a", q:"How do you know this is the problem?",
+    hint:"Your answer shapes how confident the primer can be about your problem definition.",
+    example:null,
+    type:"select",
+    options:[
+      "I heard it directly from a potential customer",
+      "I read it in reviews or forums",
+      "I observed it",
+      "I am inferring it from research"
+    ] },
+
+  P4: { key:"P4", q:"Who are your top three competitors?",
+    hint:"Direct competitors, indirect alternatives, or even the DIY option. Pick up to three.",
     example:"Row 1: Local cleaning companies with good reviews. Row 2: TaskRabbit. Row 3: Customers doing it themselves or hiring informally.",
     type:"dynlist", cap:3, min:1,
     placeholder:"Competitor or alternative" },
 
-  P4: { key:"P4", q:"What do your customers prioritize most when choosing?",
+  P5: { key:"P5", q:"How do customers in your category typically make a buying decision?",
+    hint:"What triggers the search, what do they compare, what makes them choose?",
+    example:"Most people search online after a bad experience with a cheaper option. They read reviews obsessively and often ask for referrals from someone they trust before committing.",
+    type:"text",
+    placeholder:"Buying behaviors and decision triggers\u2026" },
+
+  P6: { key:"P6", q:"What do your customers prioritize most when choosing?",
     hint:"Not what you think they should value \u2014 what actually drives their decision.",
     example:"Reliability and consistency. They will pay more for someone who shows up on time, does quality work, and communicates clearly every time.",
     type:"text",
     placeholder:"Price? Speed? Trust? Quality? Something else?" },
 
-  P5: { key:"P5", q:"How are you different from your competitors?",
+  P7: { key:"P7", q:"How are you different from your competitors?",
     hint:"Not just better \u2014 different. In a way that matters to your specific customer.",
-    example:"While competitors compete on price or speed, we compete on consistency and trust. Same team every visit, detailed communication, quality guarantee. More expensive but more reliable.",
+    example:"While competitors compete on price or speed, we compete on consistency and trust. Same team every visit, detailed communication, quality guarantee.",
     type:"text",
     placeholder:"What trade-off are you making that they aren't?" },
 
-  P6: { key:"P6", q:"Where are you with research validation?",
+  P8: { key:"P8", q:"Where are you with research validation?",
     hint:"Be honest. Knowing the difference between what you've validated and what you're assuming is what makes this primer useful.",
     example:null,
     type:"select",
     options:[
-      "Talked to customers and validated this",
-      "Talked to some customers but still have gaps",
-      "Based on observation and assumption",
-      "Not Sure"
+      "Validated \u2014 based on real customer conversations with specific evidence",
+      "In progress \u2014 some conversations complete, gaps remain",
+      "Hypothesis \u2014 based on observation and assumption"
+    ] },
+
+  P8a: { key:"P8a", q:"What form did your research take?",
+    hint:"Each method gives different confidence \u2014 structured interviews give the clearest signal, observation the weakest.",
+    example:null,
+    type:"select",
+    options:[
+      "Structured interview",
+      "Informal conversation",
+      "Survey or poll",
+      "Review and comment analysis",
+      "Observation only",
+      "No research yet"
     ] }
 };
+
+const PROMPT_KEYS = ["P1","P2","P3","P3a","P4","P5","P6","P7","P8","P8a"];
 
 /* ====================================================================
    STATE
@@ -429,11 +467,12 @@ const PROMPTS = {
 const S = {
   stage:"Pre-Launch", industry:"Home & Living", btype:"Product",
   mode:"standard",
-  answers:{ P1:null,P2:null,P3:null,P4:null,P5:null,P6:null },
-  sources:{ P1:null,P2:null,P3:null,P4:null,P5:null,P6:null },
+  answers:Object.fromEntries(PROMPT_KEYS.map(k=>[k,null])),
+  sources:Object.fromEntries(PROMPT_KEYS.map(k=>[k,null])),
   step:0,
-  plan:["P1","P2","P3","P4","P5","P6"],
+  plan:[...PROMPT_KEYS],
   generated:false,
+  coachActive:false,
 };
 
 /* ====================================================================
@@ -480,15 +519,15 @@ function escapeHTML(s){
 async function start(){
   renderIV(); renderCards(); renderDeliv();
   const openings = {
-    "Just Exploring":"You're in the best possible position \u2014 you haven't spent anything yet. These six questions will help you figure out if there's a real market for your idea before you commit. Answer based on what you know now, and flag anything that's still a guess. That's not failure. That's information.",
-    "Pre-Launch":"You're close to launch, which means this research has real stakes. Let's make sure your positioning is grounded in what your customers actually need \u2014 not just what makes sense on paper. Be honest about what you've validated and what's still an assumption.",
-    "Already in Business":"You're already selling, which means you have real data to work with. Let's use these six questions to sharpen your positioning and identify any gaps between what you assumed about your market and what you're actually seeing."
+    "Just Exploring":"You are in the best possible position \u2014 you have not committed yet. Let's use these eight questions to clarify what you actually need to research, who you are researching, and what specifically you need to test before you commit. We start with the question your research needs to answer, then build the full picture around it.",
+    "Pre-Launch":"You are close to launch, which means this research has real stakes. Let's make sure your positioning is grounded in what your customers actually need \u2014 not just what makes sense on paper. We start with the question your research needs to answer, then build the full picture around it.",
+    "Already in Business":"You are already selling, which means you have real data to work with. Let's use these eight questions to challenge what you think you know about your market. The goal is to surface what has shifted since you launched \u2014 in your customer, your competitors, and how people buy \u2014 before it shows up as a problem."
   };
-  await botSay("Let's build your Market Research Primer. I'll ask you six questions about your customer, your competitors, and how you're different. Be as honest as you can \u2014 especially about what you've actually tested versus what you're still assuming. That honesty is what makes the output useful.", null, 400);
+  await botSay("Let's build your Market Research Primer. I'll ask you eight questions about your research objective, your customer, your competitors, how people buy, and where your research stands today. Be as honest as you can \u2014 especially about what you've actually tested versus what you're still assuming. That honesty is what makes the output useful.", null, 400);
   await botSay(openings[S.stage], null, 750);
   // Depth-mode selection disabled per ADD §1.3 / Engine default \u2014 all sessions Standard
   S.mode = "standard";
-  S.plan = ["P1","P2","P3","P4","P5","P6"];
+  S.plan = [...PROMPT_KEYS];
   S.step = 0;
   document.getElementById('mode-tag').textContent = "Standard mode";
   setTimeout(()=> askNext(), 350);
@@ -528,6 +567,7 @@ function renderPrompt(p){
   if(p.type==='text')    renderTextControl(p);
   else if(p.type==='select')  renderSelectControl(p);
   else if(p.type==='dynlist') renderDynListControl(p);
+  else if(p.type==='composite') renderCompositeControl(p);
   scrollDown();
 }
 
@@ -572,6 +612,69 @@ async function handleTextAnswer(p, val){
   advance();
 }
 
+/* ---- COMPOSITE input (P1: short text + scope dropdown) ---- */
+function renderCompositeControl(p){
+  const tf = document.createElement('div');
+  tf.className = 'textfield composite';
+  const ta = document.createElement('textarea');
+  ta.placeholder = p.placeholder || '';
+  ta.maxLength = 300;
+  const counter = document.createElement('div');
+  counter.className = 'charcount';
+  counter.textContent = '0 / 300';
+
+  // Scope dropdown row
+  const scopeRow = document.createElement('div');
+  scopeRow.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:4px;';
+  const scopeLabel = document.createElement('span');
+  scopeLabel.style.cssText = 'font-size:11.5px;color:var(--gray);font-weight:500;';
+  scopeLabel.textContent = 'Geographic scope:';
+  const scopeSel = document.createElement('select');
+  scopeSel.style.cssText = 'font-family:var(--sans);font-size:13px;padding:6px 10px;border:1px solid var(--rule);border-radius:8px;background:#fff;color:var(--ink);cursor:pointer;';
+  // Default: stage-based — Just Exploring/Pre-Launch \u2192 Local, Already in Business \u2192 National
+  const defaultScope = (S.stage === 'Already in Business') ? 'National' : 'Local';
+  p.scopeOptions.forEach(opt=>{
+    const o = document.createElement('option');
+    o.value = opt; o.textContent = opt;
+    if(opt === defaultScope) o.selected = true;
+    scopeSel.appendChild(o);
+  });
+  scopeRow.appendChild(scopeLabel);
+  scopeRow.appendChild(scopeSel);
+
+  ta.addEventListener('input', ()=>{
+    counter.textContent = ta.value.length + ' / 300';
+    send.disabled = ta.value.trim().length === 0;
+    send.style.opacity = ta.value.trim().length === 0 ? .5 : 1;
+  });
+  ta.addEventListener('keydown', e=>{
+    if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); if(ta.value.trim()) submit(); }
+  });
+  const row = document.createElement('div');
+  row.className = 'textfield-row';
+  const send = document.createElement('button');
+  send.className = 'btn primary';
+  send.textContent = 'Send';
+  send.disabled = true; send.style.opacity = .5;
+  const submit = ()=> handleCompositeAnswer(p, ta.value.trim(), scopeSel.value);
+  send.onclick = submit;
+  row.appendChild(counter); row.appendChild(send);
+  tf.appendChild(ta);
+  tf.appendChild(scopeRow);
+  tf.appendChild(row);
+  chat.appendChild(tf); ta.focus();
+}
+
+async function handleCompositeAnswer(p, question, scope){
+  clearControls();
+  userMsg(`${question} \u00B7 Scope: ${scope}`);
+  S.answers[p.key] = { question, scope };
+  S.sources[p.key] = 'user';
+  renderIV();
+  await maybeProbe(p);
+  advance();
+}
+
 /* ---- SELECT input (P6) ---- */
 function renderSelectControl(p){
   const row = document.createElement('div');
@@ -589,13 +692,6 @@ function renderSelectControl(p){
 async function handleSelectAnswer(p, opt){
   clearControls();
   userMsg(opt);
-  if(p.key==='P6' && opt==='Not Sure'){
-    S.answers.P6 = 'Not Sure';
-    S.sources.P6 = 'default';
-    renderIV();
-    await botSay("No problem. Think about it this way: have you had a real conversation with someone who fits your target customer profile \u2014 where they told you about their frustration in their own words? If not, that's totally fine. I'll treat your primer as a starting hypothesis \u2014 something you're going to test, not something you've proven. You can update this anytime in <b>Your Answers</b>.", null, 850);
-    advance(); return;
-  }
   S.answers[p.key] = opt;
   S.sources[p.key] = 'user';
   renderIV();
@@ -668,10 +764,10 @@ function renderDynListControl(p){
     const vals = Array.from(rows.querySelectorAll('input')).map(i=>i.value.trim()).filter(v=>v.length>0);
     clearControls();
     userMsg(vals.join(' \u00B7 '));
-    S.answers.P3 = vals;
-    S.sources.P3 = 'user';
+    S.answers[p.key] = vals;
+    S.sources[p.key] = 'user';
     renderIV();
-    // P3 single-row follow-up (ADD §3.2 follow-up logic)
+    // Single-row follow-up (ADD §3.2 follow-up logic)
     if(vals.length === 1){
       await botSay(`Got it. <b>One more thing</b> \u2014 is there a second option your customer might choose, even if it's not a direct competitor? Doing it themselves, going without, sticking with what they've got? You can add one and I'll fold it in, or we can keep moving with what you have.`, null, 700);
       // offer add-another or proceed
@@ -721,54 +817,70 @@ function renderDynListControl(p){
    GAP PROBES & ENGAGEMENT (ADD §2.4, §12)
    ==================================================================== */
 async function maybeProbe(p){
-  // G1: P1 too vague (<8 words, market not person, etc.)
+  // G_research: P1 research question very short
   if(p.key==='P1'){
-    const v = (S.answers.P1||'').trim();
+    const v = (S.answers.P1 && S.answers.P1.question) || '';
+    const wordCount = v.split(/\s+/).filter(Boolean).length;
+    if(wordCount < 6){
+      await botSay(`<span class="ctag">Coach moment</span>That's a starting point \u2014 but a tighter research question helps the rest of the primer focus. Try framing it as a question with a yes/no answer (\u201Cwill X buy Y?\u201D) instead of a topic. You can refine it later in <b>Your Answers</b>.`, 'coach', 800);
+    }
+  }
+  // G1: P2 (target customer) too vague or names a market not a person
+  if(p.key==='P2'){
+    const v = (S.answers.P2||'').trim();
     const wordCount = v.split(/\s+/).filter(Boolean).length;
     const looksLikeMarket = /^(small businesses|consumers|millennials|gen[ -]?z|moms|founders|enterprises|people|users|customers)$/i.test(v);
     if(wordCount < 8 || looksLikeMarket){
       await botSay(`<span class="ctag">Coach moment</span>Let's tighten that up \u2014 who specifically is this for? Picture one real person you've actually met who has this problem. What do you know about them? You can edit your answer anytime, or keep moving and we'll come back to it.`, 'coach', 750);
     }
   }
-  // G2: P2 sounds like product features
-  if(p.key==='P2'){
-    const v = (S.answers.P2||'').toLowerCase();
+  // G2: P3 (problem) sounds like product features
+  if(p.key==='P3'){
+    const v = (S.answers.P3||'').toLowerCase();
     if(/\b(our (product|platform|app|service)|we offer|we provide|we have)\b/.test(v) && !/\b(frustrat|struggl|burn|stuck|tired)/.test(v)){
       await botSay(`<span class="ctag">Coach moment</span>Step back from your solution for a second \u2014 what was your customer doing yesterday that frustrated them? Describe their day, not your fix. We'll keep going, but it's worth a second pass later.`, 'coach', 750);
     }
   }
-  // G3: P3 contains generic categories (no proper nouns)
-  if(p.key==='P3'){
-    const vals = S.answers.P3 || [];
+  // P3a evidence engagement
+  if(p.key==='P3a'){
+    if(S.answers.P3a === 'I am inferring it from research'){
+      await botSay(`Honest answer. That's the right place to start \u2014 but it means you'll want at least one real customer conversation before you commit to anything based on this primer.`, null, 600);
+    }
+  }
+  // G3: P4 (competitors) contains generic categories (no proper nouns)
+  if(p.key==='P4'){
+    const vals = S.answers.P4 || [];
     const genericPatterns = /^(local |various |different |the |a )?(cleaners|cleaning compan|contractors|companies|services|providers|brands|options|alternatives)\.?\s*$/i;
     const generic = vals.some(v=> genericPatterns.test(v.trim()) || v.trim().split(/\s+/).length <= 2);
     if(generic){
       await botSay(`<span class="ctag">Coach moment</span>Quick prompt \u2014 can you name one <em>specific</em> company your customer has actually used or mentioned? Categories like "local cleaners" tell us less than "Maria's Cleaning Service." Not a blocker, just worth tightening when you have a real name to drop in.`, 'coach', 800);
     }
   }
-  // P5 engagement: comparative-better without trade-off (G5)
+  // P5 vague buying trend
   if(p.key==='P5'){
-    const v = (S.answers.P5||'').toLowerCase();
+    const v = (S.answers.P5||'').trim();
+    const wordCount = v.split(/\s+/).filter(Boolean).length;
+    if(wordCount < 10){
+      await botSay(`<span class="ctag">Coach moment</span>Think about how you found your last service provider or made your last purchase in a similar category. What happened just before you started searching? You can refine your answer in <b>Your Answers</b> later.`, 'coach', 800);
+    }
+  }
+  // G5: P7 (positioning) comparative-better without trade-off
+  if(p.key==='P7'){
+    const v = (S.answers.P7||'').toLowerCase();
     if(/\b(better|more|faster|cheaper|easier)\b/.test(v) && !/\b(instead of|rather than|at the cost of|trade[- ]?off|sacrifice|giving up)\b/.test(v)){
       await botSay(`<span class="ctag">Coach moment</span>Positioning is what you're giving up to be different \u2014 not what you're better at. What is your competitor doing that you're choosing <em>not</em> to do? You can refine your answer in <b>Your Answers</b> later if something clicks.`, 'coach', 800);
     }
   }
-  // P6 engagement: acknowledge honesty (ADD §2.4 "Acknowledging an honesty signal in P6")
-  if(p.key==='P6'){
-    const v = S.answers.P6;
-    if(v === 'Based on observation and assumption' || v === 'Not Sure'){
+  // P8 acknowledge honesty (was on P6 in v1)
+  if(p.key==='P8'){
+    const v = S.answers.P8;
+    if(v && v.startsWith('Hypothesis')){
       await botSay(`That's the right place to start this from \u2014 it means the primer will tell you what to go find out, not what to defend.`, null, 600);
-    } else if(v === 'Talked to customers and validated this'){
-      // G6 check: hedging language in P1/P2 with validated P6
-      const p1p2 = ((S.answers.P1||'')+' '+(S.answers.P2||'')).toLowerCase();
-      if(/\b(i think|probably|i imagine|i guess|maybe|might be|i suppose)\b/.test(p1p2)){
+    } else if(v && v.startsWith('Validated')){
+      // G6 check: hedging language in P2/P3 with validated P8
+      const p2p3 = ((S.answers.P2||'')+' '+(S.answers.P3||'')).toLowerCase();
+      if(/\b(i think|probably|i imagine|i guess|maybe|might be|i suppose)\b/.test(p2p3)){
         await botSay(`<span class="ctag">Coach moment</span>One thing worth pausing on \u2014 you marked your research as validated, but you described your customer with some hedging language ("I think," "probably," etc.). One of those is the real signal. You can refine the primer either way \u2014 just worth a second look before you commit to anything based on it.`, 'coach', 900);
-      }
-    } else if(v === 'Based on observation and assumption'){
-      // G7 check: feeling-language in P2 with unvalidated P6
-      const p2 = (S.answers.P2||'').toLowerCase();
-      if(/\b(burned|stuck|tired|frustrated|fed up|given up|exhausted)\b/.test(p2)){
-        await botSay(`<span class="ctag">Coach moment</span>Side note \u2014 the way you described the frustration ("burned," "given up") sounds like words that came from real people. Have you actually had this conversation, even informally? If yes, your validation might be closer to "Talked to some customers" than you marked.`, 'coach', 900);
       }
     }
   }
@@ -779,7 +891,7 @@ async function maybeProbe(p){
    ==================================================================== */
 async function finishCollection(){
   clearControls();
-  await botSay("Got everything I need. Based on your customer, your competitors, and where your research stands right now, here is your Market Research Primer.", null, 700);
+  await botSay("Got everything I need. Based on your research question, your customer, your competitors, and where your research stands right now, here is your Market Research Primer.", null, 700);
   await new Promise(r=>setTimeout(r,250));
   S.generated = true;
   // switch to Cards tab
@@ -823,15 +935,34 @@ const COACH_TOPICS = [
 
 function enterCoachMode(){
   document.getElementById('mode-tag').textContent = "Coach mode";
-  // pick transition line per P6 (ADD §1.5 token table)
-  const gapTokens = {
-    "Talked to customers and validated this":"pressure-testing what you've heard \u2014 the assumptions that survived your conversations are the most dangerous ones",
-    "Talked to some customers but still have gaps":"the gaps you already know about \u2014 those are the conversations you need next",
-    "Based on observation and assumption":"your first five customer conversations \u2014 that's where this primer either holds up or doesn't",
-    "Not Sure":"your first five customer conversations \u2014 that's where this primer either holds up or doesn't"
+  S.coachActive = true;
+  // Research question token (from P1.question, verbatim truncated to ~80 chars)
+  let researchQ = (S.answers.P1 && S.answers.P1.question) || 'your starting research question';
+  if(researchQ.length > 80) researchQ = researchQ.slice(0, 77) + '\u2026';
+
+  // Validation gap token from (P8 \u00D7 P8a) per ADD §7 token fill table
+  const p8 = S.answers.P8 || 'Hypothesis';
+  const p8a = S.answers.P8a || 'No research yet';
+  const gapFills = {
+    "Validated:Structured interview":"pressure-testing what survived your interviews",
+    "Validated:Informal conversation":"running structured follow-up to your initial conversations",
+    "In progress:Survey or poll":"the depth that survey data cannot reach",
+    "In progress:Review and comment analysis":"the gaps your review research cannot close",
+    "Hypothesis:Observation only":"your first real customer conversation",
+    "Hypothesis:No research yet":"your first five customer conversations"
   };
-  const tok = gapTokens[S.answers.P6] || gapTokens["Based on observation and assumption"];
-  botSay(`Your Market Research Primer is ready. The most important thing you can do now is get it in front of real people \u2014 starting with <b>${tok}</b>. Want to talk through how to approach those conversations?`, null, 750)
+  const p8Key = p8.split(' ')[0]; // "Validated"|"In"|"Hypothesis"
+  const p8KeyClean = p8.startsWith('In progress') ? 'In progress' : (p8.startsWith('Validated') ? 'Validated' : 'Hypothesis');
+  const mapKey = `${p8KeyClean}:${p8a}`;
+  let gapToken = gapFills[mapKey];
+  // Fallback for In progress + other types
+  if(!gapToken){
+    if(p8KeyClean === 'In progress') gapToken = 'the gaps you already know about';
+    else if(p8KeyClean === 'Hypothesis') gapToken = 'your first five customer conversations';
+    else gapToken = 'pressure-testing what survived your interviews';
+  }
+
+  botSay(`Your Market Research Primer is ready. You started with the question <b>${escapeHTML(researchQ)}</b> \u2014 and the most important thing you can do now is get this primer in front of real people to test it. The biggest gap to fill first is <b>${gapToken}</b>. Want to talk through how to approach those conversations?`, null, 800)
     .then(()=> renderCoachControls());
 }
 
@@ -892,16 +1023,29 @@ async function handleCoachFreeText(q){
   if(best){
     await botSay(best.answer + ' <span class="authored-tag" title="Prototype: this answer is authored, not generated live.">authored answer</span>', null, 900);
   } else {
-    await botSay(`That's a good question. The honest answer: I can help you think it through at a high level, but the specific call is one to make after you've talked to a few more customers. What I can tell you is that for your situation \u2014 <b>${S.stage}</b>, targeting <b>${shortCustomer()}</b>, with validation status <b>${S.answers.P6||'\u2014'}</b> \u2014 the suggested questions above are where I can go deepest. Anything in there worth pulling on?`, null, 1000);
+    await botSay(`That's a good question. The honest answer: I can help you think it through at a high level, but the specific call is one to make after you've talked to a few more customers. What I can tell you is that for your situation \u2014 <b>${S.stage}</b>, targeting <b>${shortCustomer()}</b>, with validation status <b>${S.answers.P8||'\u2014'}</b> \u2014 the suggested questions above are where I can go deepest. Anything in there worth pulling on?`, null, 1000);
   }
   renderCoachControls();
 }
 
 /* ====================================================================
    DERIVATION HELPERS (dependency map shared with deliverable)
+   v2.1 mapping: P2=customer, P3=problem, P4=competitors, P6=priorities,
+                 P7=positioning, P8=validation tier, P8a=research type
    ==================================================================== */
+function researchQuestion(){
+  const o = S.answers.P1;
+  if(!o || !o.question) return '\u2014';
+  let q = o.question.trim();
+  if(q.length > 80) q = q.slice(0, 77) + '\u2026';
+  return q;
+}
+function geoScope(){
+  const o = S.answers.P1;
+  return (o && o.scope) || 'Local';
+}
 function shortCustomer(){
-  const v = S.answers.P1 || '';
+  const v = S.answers.P2 || '';
   if(!v) return '\u2014';
   const firstSent = v.split(/[.!?]/)[0].trim();
   const words = firstSent.split(/\s+/);
@@ -909,7 +1053,7 @@ function shortCustomer(){
   return words.slice(0,8).join(' ') + '\u2026';
 }
 function shortProblem(){
-  const v = S.answers.P2 || '';
+  const v = S.answers.P3 || '';
   if(!v) return '\u2014';
   const m = v.match(/\b(unreliable|inconsistent|broken|missing|poor|bad|lack of|no clear|hard to find|can't find|frustrat\w*)\s+[\w\s]{1,30}/i);
   if(m) return m[0].replace(/\s+/g,' ').replace(/^./, c=>c.toUpperCase()).slice(0,32);
@@ -917,27 +1061,80 @@ function shortProblem(){
   return words.slice(0,5).join(' ') + (words.length>5?'\u2026':'');
 }
 function shortCompetitor(){
-  const list = S.answers.P3 || [];
+  const list = S.answers.P4 || [];
   if(!list.length) return '\u2014';
-  // pick brand-like (starts with capital, single word or two)
   const brand = list.find(v => /^[A-Z][a-zA-Z]+(?:\s[A-Z][a-zA-Z]+)?$/.test(v.trim()));
   return (brand || list[0]).trim();
 }
+function shortBuyingTrigger(){
+  const v = S.answers.P5 || '';
+  if(!v) return '\u2014';
+  const m = v.match(/\b(search\w*|compar\w*|read review\w*|ask\w*|refer\w*|trigger\w*)\b/i);
+  if(m) {
+    const idx = v.toLowerCase().indexOf(m[0].toLowerCase());
+    const around = v.slice(Math.max(0, idx-10), idx + m[0].length + 20);
+    return around.replace(/^\W+/, '').slice(0, 32);
+  }
+  return v.split(/\s+/).slice(0,5).join(' ') + (v.split(/\s+/).length>5?'\u2026':'');
+}
 function shortPriority(){
-  const v = S.answers.P4 || '';
+  const v = S.answers.P6 || '';
   if(!v) return '\u2014';
   const m = v.match(/\b([\w]+(?:\s(?:and|over|vs\.?|or)\s\w+)?)/i);
   if(m) return m[0].replace(/^./, c=>c.toUpperCase()).slice(0,28);
   return v.split(/\s+/).slice(0,4).join(' ');
 }
 function validationLabel(){
-  const v = S.answers.P6;
+  const v = S.answers.P8;
   if(!v) return '\u2014';
-  if(v.startsWith('Talked to customers and validated')) return 'Validated';
-  if(v.startsWith('Talked to some customers')) return 'In progress';
-  if(v === 'Based on observation and assumption') return 'Hypothesis';
-  if(v === 'Not Sure') return 'Hypothesis';
+  if(v.startsWith('Validated')) return 'Validated';
+  if(v.startsWith('In progress')) return 'In progress';
+  if(v.startsWith('Hypothesis')) return 'Hypothesis';
   return v;
+}
+function validationFullChip(){
+  const tier = validationLabel();
+  const type = S.answers.P8a || '';
+  if(tier === '\u2014') return '\u2014';
+  if(!type) return tier;
+  // E.g., "In progress \u2014 informal conversations"
+  const typeShort = type.toLowerCase()
+    .replace(/^structured /, 'structured ')
+    .replace(/^informal /, 'informal ')
+    .replace(/^survey or poll/, 'survey data')
+    .replace(/^review and comment analysis/, 'review analysis')
+    .replace(/^observation only/, 'observation')
+    .replace(/^no research yet/, 'no research yet');
+  return `${tier} \u2014 ${typeShort}`;
+}
+function confidenceNote(){
+  // P8 \u00D7 P8a lookup table per ADD §7.2
+  const p8 = (S.answers.P8 || '').split(' ')[0]; // first word
+  const p8Cat = p8 === 'Validated' ? 'Validated'
+              : (S.answers.P8||'').startsWith('In progress') ? 'In progress'
+              : 'Hypothesis';
+  const p8a = S.answers.P8a || 'No research yet';
+  const key = `${p8Cat}:${p8a}`;
+  const map = {
+    "Validated:Structured interview":"High confidence on problem, Medium on solution. Based on structured customer interviews.",
+    "Validated:Informal conversation":"Medium-high confidence on problem, Low-medium on solution. Based on informal customer conversations \u2014 consider structured follow-up.",
+    "Validated:Survey or poll":"Medium confidence on both. Survey data gives breadth but not depth.",
+    "Validated:Review and comment analysis":"Medium confidence on problem, Low on solution. Direct conversations recommended.",
+    "Validated:Observation only":"Medium on problem, Low on solution. Direct customer input needed.",
+    "In progress:Survey or poll":"Medium confidence on both. Survey data gives breadth but not depth \u2014 one-on-one conversations recommended.",
+    "In progress:Review and comment analysis":"Medium confidence on problem, Low on solution. Based on review and comment analysis \u2014 direct conversations needed.",
+    "In progress:Structured interview":"Medium-high confidence on problem, Medium on solution. Structured interviews in progress \u2014 keep going.",
+    "In progress:Informal conversation":"Medium confidence on problem, Low-medium on solution. Informal conversations in progress \u2014 consider structured follow-up.",
+    "In progress:Observation only":"Medium on problem, Low on solution. Direct customer conversations recommended next.",
+    "In progress:No research yet":"Low confidence. The validation tier here suggests progress is starting \u2014 prioritize first customer conversations.",
+    "Hypothesis:Observation only":"Medium on problem, Low on solution. Based on observation \u2014 not yet confirmed by direct customer input.",
+    "Hypothesis:No research yet":"Low across the board. This primer is your starting hypothesis. Validate before committing resources.",
+    "Hypothesis:Structured interview":"Low-medium on problem, Low on solution. Validation tier suggests this is still hypothesis-stage \u2014 keep going with interviews.",
+    "Hypothesis:Informal conversation":"Low-medium on problem, Low on solution. Informal conversations are a start \u2014 verify with structured interviews.",
+    "Hypothesis:Survey or poll":"Low-medium on both. Survey data without direct conversations leaves the solution-side untested.",
+    "Hypothesis:Review and comment analysis":"Low on both. Review analysis is a starting signal \u2014 direct customer conversations are the next step."
+  };
+  return map[key] || "Confidence on this primer reflects what was collected. Update P8 and P8a as your research deepens.";
 }
 function tierClass(){
   const lbl = validationLabel();
@@ -945,92 +1142,45 @@ function tierClass(){
   if(lbl==='In progress') return 'progress';
   return 'hypothesis';
 }
-function confidencePrefix(){
-  const lbl = validationLabel();
-  if(lbl==='Validated') return 'High confidence on problem, medium on solution.';
-  if(lbl==='In progress') return 'Medium confidence on problem, low on solution.';
-  if(S.answers.P6 === 'Not Sure') return 'Low across the board, primer treated as starting hypothesis.';
-  return 'Medium on problem identification, low on solution validation.';
-}
 function confidenceLabel(){
   const lbl = validationLabel();
   if(lbl==='Validated') return 'HIGH CONFIDENCE';
   if(lbl==='In progress') return 'MEDIUM CONFIDENCE';
   return 'LOW CONFIDENCE';
 }
-function confidenceNote(){
-  const lbl = validationLabel();
-  const cust = shortCustomer();
-  const prob = (S.answers.P2||'').toLowerCase().includes('premium') || (S.answers.P4||'').toLowerCase().includes('reliab') ? 'premium pricing' : 'your offer at the price you have in mind';
-  if(lbl==='Validated'){
-    return `You have spoken to real customers and the problem you are solving is grounded in their words. Your next pressure-test is whether the solution shape matches what they will actually pay for \u2014 that is the gap that survives validation.`;
-  }
-  if(lbl==='In progress'){
-    return `You have identified a real pain point and your hypothesis about the target customer is well-articulated. You have not yet confirmed that enough customers will pay ${prob}, or validated which specific aspect of your offer this segment needs most urgently. This primer is a strong foundation \u2014 not a final answer.`;
-  }
-  if(S.answers.P6 === 'Not Sure'){
-    return `We have treated your primer as a starting hypothesis. Your first job is to talk to five people who fit your target customer profile. Come back and refine this after.`;
-  }
-  return `Your primer is built on observation and instinct, not yet on conversations. That is a legitimate starting point \u2014 but the assumptions in it have not been tested against real customer voices. Treat this as your research plan, not your business plan.`;
-}
 
-/* coach moments per ADD §8.1, §8.2 \u2014 stage \u00D7 validation-state lookup */
+/* Coach Moments per v2.1 ADD §8.1 \u2014 stage-only, 2 per stage, 6 total */
 function coachMoments(){
   const stage = S.stage;
-  const validated = S.answers.P6 === 'Talked to customers and validated this';
   const LIB = {
-    "Just Exploring": {
-      gap: [
-        {gap:"Assumption test", q:"What assumption about your customer are you most afraid to test? That fear is a signal \u2014 it is pointing at the thing most likely to change your direction if you go find out.", src:"Just Exploring \u00B7 assumption validation"},
-        {gap:"First conversation", q:"Who is the one person you could talk to this week who fits your target customer profile? Not to pitch them \u2014 just to listen. What would you ask?", src:"Just Exploring \u00B7 first customer conversation"}
-      ],
-      val: [
-        {gap:"Pattern check", q:"You've talked to customers \u2014 good. Now: when you compare what they said, do the words cluster, or do they scatter? Clustering is a target segment forming. Scattering is a sign you may be talking to multiple segments and need to pick one.", src:"Just Exploring \u00B7 segment clarity"},
-        {gap:"What you didn't ask", q:"In the conversations you've had, what is the question you wish you had asked but didn't? That question is your next conversation.", src:"Just Exploring \u00B7 interview iteration"}
-      ]
-    },
-    "Pre-Launch": {
-      gap: [
-        {gap:"Validation gap", q:`Your primer is built on ${validationTokenInline()} \u2014 before you spend anything on launch, what is the one thing you most need to confirm with a real customer conversation?`, src:"Pre-Launch \u00B7 validation gap"},
-        {gap:"Positioning reality check", q:"If you handed your positioning statement to your top three target customers right now, would they nod immediately \u2014 or would they need you to explain it? Their first reaction is the only review that matters.", src:"Pre-Launch \u00B7 positioning reality check"}
-      ],
-      val: [
-        {gap:"Pressure-test before launch", q:"You've validated. But validation in research conditions is not the same as a customer reaching for a credit card. What is the smallest, cheapest paid commitment you could offer a willing customer this month \u2014 to confirm the willingness, not just the interest?", src:"Pre-Launch \u00B7 paid-validation test"},
-        {gap:"The assumption beneath the validation", q:"Every validated finding sits on top of an assumption you didn't think to test. In your case: what is the one belief about your customer that none of your conversations have specifically challenged? That is your hidden risk.", src:"Pre-Launch \u00B7 hidden assumption"}
-      ]
-    },
-    "Already in Business": {
-      gap: [
-        {gap:"Shifting priorities", q:"When did you last have a real conversation with a customer about what they prioritize now \u2014 not when you launched, but right now? Markets shift. The businesses that stay ahead of that are the ones that keep listening.", src:"Already in Business \u00B7 shifting customer priorities"},
-        {gap:"Competitor blind spot", q:"Is there a competitor you dismissed early that is now showing up more often in customer conversations? That is worth a second look.", src:"Already in Business \u00B7 competitor reassessment"}
-      ],
-      val: [
-        {gap:"The market keeps moving", q:"You've stayed close to your customers \u2014 that's the harder discipline than launching. The question now: what is the trend in their lives or work that they themselves haven't named yet, that will reshape what they need from you in the next 12 months?", src:"Already in Business \u00B7 forward-looking signals"},
-        {gap:"Use what you have", q:"You have something most founders building a primer don't: customer data. What is one signal in your existing customer behaviour \u2014 repeat purchase patterns, churn timing, support questions \u2014 that you haven't yet turned into a positioning decision?", src:"Already in Business \u00B7 existing-data leverage"}
-      ]
-    }
+    "Just Exploring": [
+      {gap:"Research objective", q:"Look at the research question you started with. Can you answer it with what you know right now \u2014 or is it still a guess? The gap between those two answers is your research plan.", src:"Just Exploring \u00B7 research objective"},
+      {gap:"Assumption test", q:"What assumption about your customer are you most afraid to test? That fear is a signal \u2014 it is pointing at the thing most likely to change your direction if you go find out.", src:"Just Exploring \u00B7 assumption validation"}
+    ],
+    "Pre-Launch": [
+      {gap:"Validation gap", q:`Your primer is built on ${validationTokenInline()}. Before you spend anything on launch, what is the one thing you most need to confirm with a real customer conversation?`, src:"Pre-Launch \u00B7 validation gap"},
+      {gap:"Positioning reality check", q:"If you handed your positioning statement to your top three target customers right now, would they nod immediately \u2014 or would they need you to explain it?", src:"Pre-Launch \u00B7 positioning reality check"}
+    ],
+    "Already in Business": [
+      {gap:"Shifting market", q:"When did you last have a real conversation with a customer about what they prioritize now \u2014 not when you launched, but right now? Markets shift. The businesses that stay ahead keep listening.", src:"Already in Business \u00B7 shifting customer priorities"},
+      {gap:"Competitor blind spot", q:"Is there a competitor you dismissed early that is now showing up more often in customer conversations? That is worth a second look.", src:"Already in Business \u00B7 competitor reassessment"}
+    ]
   };
-  const set = LIB[stage] || LIB["Pre-Launch"];
-  const moments = validated ? set.val : set.gap;
-  // defensive fallback
-  if(!moments || moments.length < 2){
-    return LIB["Just Exploring"].gap.slice(0,2);
-  }
-  return moments.slice(0,2);
+  return (LIB[stage] || LIB["Pre-Launch"]).slice(0,2);
 }
 function validationTokenInline(){
-  const v = S.answers.P6;
-  if(v === 'Talked to some customers but still have gaps') return 'partial';
-  if(v === 'Based on observation and assumption' || v === 'Not Sure') return 'assumption';
-  return 'partial';
+  const v = S.answers.P8 || '';
+  if(v.startsWith('Validated')) return 'validated';
+  if(v.startsWith('In progress')) return 'partial';
+  return 'assumption';
 }
 
 /* Zone 5 "this week" actions per ADD §9.1 */
 function weeklyActions(){
   const lbl = validationLabel();
   const stage = S.stage;
-  const isP4Premium = /(reliab|premium|quality|trust)/i.test(S.answers.P4||'');
-  const priceVerb = isP4Premium ? 'pricing premium' : 'price point';
+  const isPremium = /(reliab|premium|quality|trust)/i.test(S.answers.P6||'');
+  const priceVerb = isPremium ? 'pricing premium' : 'price point';
   const ACTION_LIB = {
     "Just Exploring": {
       "Hypothesis":[
@@ -1087,47 +1237,53 @@ function weeklyActions(){
 
 /* Strategic Trade-off columns per ADD §6 sub-section 2.4 */
 function tradeoffColumns(){
-  const p4 = (S.answers.P4||'').toLowerCase();
-  const p5 = (S.answers.P5||'').toLowerCase();
+  // P6 = priorities, P7 = positioning in v2.1
+  const p6 = (S.answers.P6||'').toLowerCase();
+  const p7 = (S.answers.P7||'').toLowerCase();
   let opt = [], notOpt = [];
-  if(/(reliab|consist|trust|quality)/.test(p4)){
+  if(/(reliab|consist|trust|quality)/.test(p6)){
     opt = ["Consistent, reliable delivery","Quality that doesn't need follow-up","Trust built through repetition","Premium pricing"];
     notOpt = ["Lowest cost option","Price-sensitive customers","Maximum market size","Flexibility in quality or timing"];
-  } else if(/(speed|fast|quick|on time)/.test(p4)){
+  } else if(/(speed|fast|quick|on time)/.test(p6)){
     opt = ["Speed of delivery","Quick turnaround","Responsive communication","Premium for urgency"];
     notOpt = ["Lowest cost option","Deep customization","Maximum market size","Long-form engagements"];
-  } else if(/(price|cheap|afford|low cost|cost)/.test(p4)){
+  } else if(/(price|cheap|afford|low cost|cost)/.test(p6)){
     opt = ["Lowest accessible price","Scale through volume","Simple, repeatable offer","Wide market reach"];
     notOpt = ["Premium feature depth","High-touch service","Customization","Niche specialization"];
   } else {
-    // generic fallback: pull verbs/keywords from P5
-    const tokens = p5.split(/[,.]/).map(t=>t.trim()).filter(Boolean).slice(0,4);
+    const tokens = p7.split(/[,.]/).map(t=>t.trim()).filter(Boolean).slice(0,4);
     opt = tokens.length ? tokens.map(t=> t.replace(/^./, c=>c.toUpperCase())) : ["Your stated differentiators (refine in Your Answers)"];
     notOpt = ["What your competitors emphasize that you're choosing to forgo (refine in Your Answers)"];
   }
   return {opt, notOpt};
 }
 
-/* Zone 2 generated prose per ADD §6 */
+/* Zone 2 generated prose per v2.1 ADD §6 — eight sub-sections */
 function primerProse(){
-  const cust = S.answers.P1 || '';
-  const prob = S.answers.P2 || '';
-  const comps = S.answers.P3 || [];
-  const prio = S.answers.P4 || '';
-  const pos  = S.answers.P5 || '';
+  const rq = researchQuestion();
+  const cust = S.answers.P2 || '';
+  const prob = S.answers.P3 || '';
+  const evidence = S.answers.P3a || '';
+  const comps = S.answers.P4 || [];
+  const buying = S.answers.P5 || '';
+  const prio = S.answers.P6 || '';
+  const pos  = S.answers.P7 || '';
 
   const cust1 = cust.split(/(?<=[.!?])\s+/)[0] || cust;
-  const probShort = prob.split(/(?<=[.!?])\s+/)[0] || prob;
-  const lede = `You serve ${cust1.toLowerCase().replace(/\.$/,'')}. While competitors compete on ${competitorAxis()}, you compete on ${differentiatorAxis(prio,pos)}.`;
-
-  // First sentence of P4, lower-cased and trimmed of trailing period \u2014 used inline
   const prioFirst = (prio.split(/(?<=[.!?])\s+/)[0] || prio).replace(/\.$/,'').toLowerCase();
-  const customer = `${cust}${prio && !prob.toLowerCase().includes((prio.toLowerCase().split(/\s+/)[0])||'_____') ? ` Their decisions are driven by ${prioFirst}.` : ''}`.trim();
 
+  // 2.1 research question anchor
+  const anchor = rq;
+
+  // 2.2 customer
+  const customerProse = `${cust}${prio && !prob.toLowerCase().includes((prio.toLowerCase().split(/\s+/)[0])||'_____') ? ` Their decisions are driven by ${prioFirst}.` : ''}`.trim();
+
+  // 2.3 what they're doing instead
   const doingInstead = comps.length
-    ? `Today, they ${comps.length>1 ? 'are choosing between ' : 'mostly rely on '}${comps.map(c=>`<b>${escapeHTML(c)}</b>`).join(', ')}, or doing the work themselves. None of these fully solve the problem \u2014 each one trades off something your target customer cares about.`
-    : `Today, they're working around the problem with whatever they can find. None of the available options fully solve it.`;
+    ? `${prob ? prob + ' ' : ''}Today, they ${comps.length>1 ? 'are choosing between ' : 'mostly rely on '}${comps.map(c=>`<b>${escapeHTML(c)}</b>`).join(', ')}, or working around the problem. None of these fully solve it \u2014 each one trades off something your target customer cares about. ${evidence ? `<em>Evidence type: ${evidence.toLowerCase()}.</em>` : ''}`
+    : `${prob ? prob + ' ' : ''}Today, they're working around the problem with whatever they can find. None of the available options fully solve it.`;
 
+  // 2.4 top three competitors
   const competitorBlocks = comps.length ? comps.map((c, i)=>{
     const characterizations = [
       `Familiar option but limited in fit \u2014 strong on convenience, less so on ${differentiatorAxis(prio,pos).split(/\s/).slice(0,2).join(' ')}.`,
@@ -1137,21 +1293,38 @@ function primerProse(){
     return `<div class="comp"><span class="n">${escapeHTML(c)} \u2014</span><span class="d">${characterizations[i] || characterizations[2]}</span></div>`;
   }).join('') : `<div class="comp"><span class="d">No specific competitors named yet \u2014 refine this in Your Answers when you can.</span></div>`;
 
+  // 2.5 market context
+  const scope = geoScope();
+  const industry = S.industry || 'this category';
+  const marketContext = `The ${industry.toLowerCase()} market${scope === 'Local' ? ' in your local area' : scope === 'Regional' ? ' regionally' : scope === 'National' ? ' nationally' : ' internationally'} is established and competitive, with steady demand and a mix of established players and newer entrants. <em>Industry estimates \u2014 verify with a qualified business advisor before making decisions.</em>`;
+
+  // 2.6 buying trends
+  const buyingTrends = buying || 'Customers in this category typically search after a pain point triggers urgency, compare two to three options on reviews and price, and convert fastest when referred.';
+
+  // 2.7 priorities
+  const priorities = prio || 'Your customers prioritize what they value most when choosing \u2014 refine this in Your Answers as you learn more.';
+
+  // 2.8 positioning + trade-off
+  const lede = `You're answering: ${rq}. While competitors compete on ${competitorAxis()}, you compete on ${differentiatorAxis(prio,pos)}.`;
   const advantage = `${prio ? `Customers want ${prioFirst}.` : ''} Competitors offer the comfortable trade-off; you offer the uncomfortable one \u2014 and your target customer has already decided that's worth choosing.`;
 
   return {
     lede,
-    customer,
+    anchor,
+    customer: customerProse,
     doingInstead,
     competitorBlocks,
+    marketContext,
+    buyingTrends,
+    priorities,
     advantage,
     tradeoff: tradeoffColumns()
   };
 }
 function competitorAxis(){
-  const p3 = (S.answers.P3||[]).join(' ').toLowerCase();
-  if(/(taskrabbit|uber|fiverr|amazon|marketplace)/.test(p3)) return 'volume and convenience';
-  if(/(diy|themselves|nothing)/.test(p3)) return 'doing nothing or doing it themselves';
+  const p4 = (S.answers.P4||[]).join(' ').toLowerCase();
+  if(/(taskrabbit|uber|fiverr|amazon|marketplace)/.test(p4)) return 'volume and convenience';
+  if(/(diy|themselves|nothing)/.test(p4)) return 'doing nothing or doing it themselves';
   return 'price or speed';
 }
 function differentiatorAxis(prio, pos){
@@ -1164,16 +1337,15 @@ function differentiatorAxis(prio, pos){
   return prio ? prio.split(/\s+/).slice(0,2).join(' ').toLowerCase() : 'a different kind of value';
 }
 
-/* terms surfaced in this user's output */
+/* terms surfaced in this user's output — v2.1 ADD §9.3: 5 terms */
 function relevantTerms(){
-  const t = [
+  return [
+    {n:"Target Customer", d:"The specific person your business is built for. The more precisely you can describe them, the more useful your research becomes."},
+    {n:"Pain Point", d:"A specific frustration or unmet need a customer experiences with current solutions."},
+    {n:"Buying Trends", d:"The observable patterns in how customers in your category search, compare, and decide. Distinct from what they say they care about."},
     {n:"Positioning", d:"How your business is different from competitors in a way that matters to your specific customer. Not better \u2014 different."},
-    {n:"Target customer", d:"The specific person your business is built for. The more precisely you can describe them, the more useful your research becomes."},
-    {n:"Market validation", d:"Confirming through real conversations that enough people have the problem you solve and will pay to solve it."},
-    {n:"Competitive advantage", d:"The specific gap you fill that competitors do not. Grounded in what your customer prioritizes, not what you think is impressive."},
-    {n:"Pain point", d:"A specific frustration or unmet need a customer experiences with current solutions."}
+    {n:"Market Validation", d:"Confirming through real conversations that enough people have the problem you solve and will pay to solve it."}
   ];
-  return t.slice(0,5);
 }
 
 /* ====================================================================
@@ -1181,7 +1353,7 @@ function relevantTerms(){
    ==================================================================== */
 function renderIV(){
   const tv = document.getElementById('tv-iv');
-  const rows = ["P1","P2","P3","P4","P5","P6"].map(k=>{
+  const rows = PROMPT_KEYS.map(k=>{
     const p = PROMPTS[k];
     const a = S.answers[k];
     const src = S.sources[k];
@@ -1191,6 +1363,9 @@ function renderIV(){
       valHTML = `<div class="value empty">Waiting for your answer\u2026</div>`;
     } else if(Array.isArray(a)){
       valHTML = `<div class="value">${a.map(escapeHTML).join('  &middot;  ')}</div>`;
+    } else if(typeof a === 'object' && a.question){
+      // composite (P1)
+      valHTML = `<div class="value">${escapeHTML(a.question)} <span style="color:var(--faint);font-size:11px;">\u00B7 Scope: ${escapeHTML(a.scope)}</span></div>`;
     } else {
       valHTML = `<div class="value">${escapeHTML(a)}</div>`;
     }
@@ -1239,6 +1414,21 @@ function openEdit(k){
       <button class="btn primary" onclick="saveEdit('${k}')">Save</button>
       <button class="btn ghost" onclick="renderIV()">Cancel</button>
     </div>`;
+  } else if(p.type === 'composite'){
+    const q = (curr && curr.question) || '';
+    const sc = (curr && curr.scope) || 'Local';
+    const scopeOpts = p.scopeOptions.map(o=>`<option ${o===sc?'selected':''}>${o}</option>`).join('');
+    editor = `<div class="edit-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+      <textarea id="ed-${k}">${escapeHTML(q)}</textarea>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-size:11.5px;color:var(--gray);">Scope:</span>
+        <select id="ed-${k}-scope">${scopeOpts}</select>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn primary" onclick="saveEdit('${k}')">Save</button>
+        <button class="btn ghost" onclick="renderIV()">Cancel</button>
+      </div>
+    </div>`;
   } else if(p.type === 'dynlist'){
     const arr = Array.isArray(curr) ? curr : [];
     const items = arr.concat(['','','']).slice(0,p.cap).map((v,i)=>
@@ -1261,6 +1451,11 @@ function saveEdit(k){
   let v;
   if(p.type === 'text') v = document.getElementById('ed-'+k).value.trim();
   else if(p.type === 'select') v = document.getElementById('ed-'+k).value;
+  else if(p.type === 'composite'){
+    const q = document.getElementById('ed-'+k).value.trim();
+    const sc = document.getElementById('ed-'+k+'-scope').value;
+    v = { question: q, scope: sc };
+  }
   else if(p.type === 'dynlist'){
     v = [];
     for(let i=0;i<p.cap;i++){
@@ -1281,19 +1476,21 @@ function saveEdit(k){
 }
 
 /* ====================================================================
-   TAB: CARDS (10 cards, ADD §4.2)
+   TAB: CARDS (12 cards, v2.1 ADD §4.2)
    ==================================================================== */
 const CARD_DEFS = [
   {n:"1", t:"Your Situation"},
-  {n:"2", t:"Your Core Market Position"},
+  {n:"2", t:"Your Research Question"},
   {n:"3", t:"Your Customer"},
-  {n:"4", t:"Your Top Three Competitors"},
-  {n:"5", t:"The Strategic Trade-Off"},
-  {n:"6", t:"Your Competitive Advantage"},
-  {n:"7", t:"Validation Status"},
-  {n:"8", t:"Coach Moment"},
-  {n:"9", t:"What's Next"},
-  {n:"10",t:"Terms in Your Primer"}
+  {n:"4", t:"What They Are Doing Instead"},
+  {n:"5", t:"Your Top Three Competitors"},
+  {n:"6", t:"Market Context"},
+  {n:"7", t:"Buying Trends"},
+  {n:"8", t:"Your Positioning"},
+  {n:"9", t:"Validation Status"},
+  {n:"10",t:"Coach Moment"},
+  {n:"11",t:"What's Next"},
+  {n:"12",t:"Terms in Your Primer"}
 ];
 function renderCards(){
   const tv = document.getElementById('tv-cards');
@@ -1306,24 +1503,25 @@ function renderCards(){
           <div class="placeholder-bar short"></div>
         </div>
       </div>`).join('');
-  document.getElementById('cards-count').textContent = '0/10';
+  document.getElementById('cards-count').textContent = '0/12';
 }
 function cardContent(){
   const prose = primerProse();
   const cm = coachMoments();
   const actions = weeklyActions();
-  const synthesis = `<b>${S.stage}, ${S.industry}.</b> Targeting ${shortCustomer().toLowerCase()} around ${shortProblem().toLowerCase()}. Validation: ${validationLabel().toLowerCase()}.`;
-  const answerRows = ["P1","P2","P3","P4","P5","P6"].map(k=>{
+  const synthesis = `<b>${S.stage}, ${S.industry}.</b> Answering: ${researchQuestion()}. Targeting ${shortCustomer().toLowerCase()}. Validation: ${validationLabel().toLowerCase()}${S.answers.P8a ? ' \u2014 ' + S.answers.P8a.toLowerCase() : ''}.`;
+  const answerRows = PROMPT_KEYS.map(k=>{
     const p = PROMPTS[k]; const a = S.answers[k];
     const qLabel = "Q" + k.slice(1);
     let val;
     if(a==null) val='<span style="color:var(--faint);font-style:italic;">\u2014</span>';
     else if(Array.isArray(a)) val = a.length ? a.map(escapeHTML).join(', ') : 'None';
+    else if(typeof a === 'object' && a.question) val = `${escapeHTML(a.question)} <span style="color:var(--faint);">(${escapeHTML(a.scope)})</span>`;
     else val = escapeHTML(a);
-    return `<div style="display:grid;grid-template-columns:30px 1fr;gap:8px;margin-bottom:7px;">
-      <span style="font-family:var(--display);font-weight:600;color:var(--teal);font-size:13px;">${qLabel}</span>
-      <span><span style="color:var(--gray);font-size:11.5px;">${escapeHTML(p.q)}</span><br>
-      <b style="font-size:12.5px;">${val}</b></span></div>`;
+    return `<div style="display:grid;grid-template-columns:36px 1fr;gap:8px;margin-bottom:6px;">
+      <span style="font-family:var(--display);font-weight:600;color:var(--teal);font-size:12.5px;">${qLabel}</span>
+      <span><span style="color:var(--gray);font-size:11px;">${escapeHTML(p.q)}</span><br>
+      <b style="font-size:12px;">${val}</b></span></div>`;
   }).join('');
   return {
     "1": `${synthesis}
@@ -1331,15 +1529,17 @@ function cardContent(){
         <div style="font-family:var(--display);font-weight:500;font-size:15px;color:var(--navy);margin-bottom:10px;">Your answers</div>
         ${answerRows}
       </div>`,
-    "2": `<em>${prose.lede}</em>`,
+    "2": `<em>${escapeHTML(researchQuestion())}</em>`,
     "3": prose.customer,
-    "4": prose.competitorBlocks,
-    "5": `${prose.tradeoff.opt.length} optimizations chosen \u00B7 ${prose.tradeoff.notOpt.length} trade-offs declined. <em>Optimizing for ${prose.tradeoff.opt.slice(0,2).join(', ').toLowerCase()}\u2026</em>`,
-    "6": prose.advantage,
-    "7": `<b>${validationLabel()} \u2014 ${confidenceLabel()}</b>. ${confidenceNote()}`,
-    "8": cm.map(c=>`<em>"${c.q.slice(0,80)}\u2026"</em>`).join('<br><br>'),
-    "9": `<b>This week:</b> ${actions[0]}<br><b>Next on the platform:</b> Section 6 \u2014 Naming Your Business.`,
-    "10":relevantTerms().map(t=>`<b>${t.n}</b>`).join(' \u00B7 ')
+    "4": prose.doingInstead,
+    "5": prose.competitorBlocks,
+    "6": prose.marketContext,
+    "7": prose.buyingTrends,
+    "8": `${prose.advantage}<br><br><span style="font-size:11px;color:var(--gray);">Trade-off: optimizing for ${prose.tradeoff.opt.slice(0,2).join(', ').toLowerCase()}; giving up ${prose.tradeoff.notOpt.slice(0,2).join(', ').toLowerCase()}.</span>`,
+    "9": `<b>${validationLabel()}</b>${S.answers.P8a ? ' \u2014 '+escapeHTML(S.answers.P8a.toLowerCase()) : ''}. ${confidenceNote()}`,
+    "10": cm.map(c=>`<em>"${c.q.slice(0,90)}\u2026"</em>`).join('<br><br>'),
+    "11": `<b>This week:</b> ${escapeHTML(actions[0]||'')}<br><b>Next on the platform:</b> Section 6 \u2014 Naming Your Business.`,
+    "12": relevantTerms().map(t=>`<b>${t.n}</b>`).join(' \u00B7 ')
   };
 }
 function populateCards(){
@@ -1351,12 +1551,12 @@ function populateCards(){
     el.classList.remove('empty');
     el.querySelector('.cbody').innerHTML = content[c.n];
   });
-  document.getElementById('cards-count').textContent = '10/10';
+  document.getElementById('cards-count').textContent = `${CARD_DEFS.length}/${CARD_DEFS.length}`;
 }
 async function populateCardsSequentially(){
   const content = cardContent();
   for(let i=0;i<CARD_DEFS.length;i++){
-    await new Promise(res=>setTimeout(res, 220));
+    await new Promise(res=>setTimeout(res, 200));
     const c = CARD_DEFS[i];
     const el = document.getElementById('card-'+c.n);
     if(!el) continue;
@@ -1409,10 +1609,11 @@ function renderDeliv(){
           ${[
             ["Business stage", S.stage],
             ["Target customer", shortCustomer()],
-            ["Problem", shortProblem()],
+            ["Research question", researchQuestion().slice(0, 32) + (researchQuestion().length > 32 ? '\u2026' : '')],
+            ["Geographic scope", geoScope()],
             ["Top competitor", shortCompetitor()],
-            ["Priority", shortPriority()],
-            ["Validation", validationLabel()]
+            ["Customer priority", shortPriority()],
+            ["Validation", validationFullChip()]
           ].map(s=>`<div class="snap-cell"><div class="k">${escapeHTML(s[0])}</div><div class="v">${escapeHTML(s[1])}</div></div>`).join('')}
         </div>
       </div>
@@ -1423,6 +1624,11 @@ function renderDeliv(){
         <div class="ztitle"><span class="znum">2</span>Your strategic foundation</div>
 
         <div class="primer-lede"><div class="l">${prose.lede}</div></div>
+
+        <div class="primer-section">
+          <h4>Research question</h4>
+          <p><em>${escapeHTML(prose.anchor)}</em></p>
+        </div>
 
         <div class="primer-section">
           <h4>Your customer</h4>
@@ -1440,7 +1646,23 @@ function renderDeliv(){
         </div>
 
         <div class="primer-section">
-          <h4>The strategic trade-off you are making</h4>
+          <h4>Market context</h4>
+          <p>${prose.marketContext}</p>
+        </div>
+
+        <div class="primer-section">
+          <h4>Buying trends and market context</h4>
+          <p>${escapeHTML(prose.buyingTrends)}</p>
+        </div>
+
+        <div class="primer-section">
+          <h4>What your customers prioritize most</h4>
+          <p>${escapeHTML(prose.priorities)}</p>
+        </div>
+
+        <div class="primer-section">
+          <h4>Your positioning</h4>
+          <p>${prose.advantage}</p>
           <div class="tradeoff">
             <div class="col">
               <h5>Optimizing for</h5>
@@ -1451,11 +1673,6 @@ function renderDeliv(){
               <ul>${prose.tradeoff.notOpt.map(o=>`<li>${escapeHTML(o)}</li>`).join('')}</ul>
             </div>
           </div>
-        </div>
-
-        <div class="primer-section">
-          <h4>Your competitive advantage</h4>
-          <p>${prose.advantage}</p>
         </div>
       </div>
 
@@ -1470,7 +1687,7 @@ function renderDeliv(){
             <div class="conf">${confidenceLabel()}</div>
           </div>
           <div class="vnote">
-            <div class="pre">${confidencePrefix()}</div>
+            <div class="pre">${S.answers.P8a ? escapeHTML(S.answers.P8a.toUpperCase()) : 'NO RESEARCH TYPE GIVEN'}</div>
             <div class="note">${confidenceNote()}</div>
           </div>
         </div>
@@ -1501,6 +1718,7 @@ function renderDeliv(){
             <ul>
               <li>Section 6 \u2014 Naming Your Business is your next step in Module 1.</li>
               <li>Your market research primer travels with you. Every section that follows builds on what you established here.</li>
+              <li><b>Set a reminder to revisit this primer every 90 days.</b> Your market will shift before you notice it without prompting.</li>
             </ul>
           </div>
         </div>
@@ -1508,12 +1726,15 @@ function renderDeliv(){
         <div class="terms-grid">
           ${relevantTerms().map(t=>`<div class="term"><b>${escapeHTML(t.n)} \u2014</b> ${escapeHTML(t.d)}</div>`).join('')}
         </div>
+        <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--rule);font-size:10.5px;color:var(--gray);font-style:italic;">
+          Benchmark data sourced from SCORE, SBA, and HubSpot industry frameworks. All figures are estimates \u2014 verify with a qualified business advisor before making decisions.
+        </div>
       </div>
 
-      <!-- BOUNDARIES & DISCLAIMER (ADD \u00A710) -->
+      <!-- BOUNDARIES & DISCLAIMER (v2.1 ADD \u00A710) -->
       <div class="bound-block">
-        <p>This primer provides general information only \u2014 not legal, financial, regulatory, or professional advice. Information shown here, including customer characterizations, competitor descriptions, and validation benchmarks, changes frequently and may not reflect current conditions. We make no guarantees about the accuracy, completeness, or outcomes of any information provided. Always verify with the relevant authority and consult a qualified professional before making decisions.</p>
-        <p>This primer is a strategic starting point, not a substitute for primary market research. The customer profile, competitor analysis, and positioning here reflect your own judgment as it stands today \u2014 they have not been independently validated, even where the validation tier is "Validated." Before making material commitments based on this primer \u2014 pricing decisions, brand launches, channel investments \u2014 talk to real customers in your target segment, and consult a qualified market research professional for any decision that depends on quantified market size, segment economics, or competitive intelligence beyond what your own conversations can produce.</p>
+        <p>This Market Research Primer provides general information only \u2014 not legal, financial, regulatory, or professional advice. Information shown here, including customer characterizations, market context estimates, competitor descriptions, and validation benchmarks, changes frequently and may not reflect current conditions. We make no guarantees about the accuracy, completeness, or outcomes of any information provided. Always verify with the relevant authority and consult a qualified professional before making decisions.</p>
+        <p>This primer is a strategic starting point, not a substitute for primary market research. The customer profile, competitor analysis, market context estimates, and positioning here reflect your own judgment as it stands today \u2014 they have not been independently validated. Before making material commitments based on this primer \u2014 pricing decisions, brand launches, channel investments \u2014 talk to real customers in your target segment, and consult a qualified market research professional for any decision that depends on quantified market size, segment economics, or competitive intelligence beyond what your own conversations can produce. For specific pricing strategy questions, use the Popstart Pricing agent.</p>
       </div>
 
     </div>
